@@ -1,0 +1,737 @@
+**Objective - C의 Selector
+
+=>Swift는 함수형 프로그래밍언어이고 함수가 일급 객체라서 함수의 참조를 변수에 바로 대입할 수 있고 리턴할 수 있습니다.
+
+=>Objective-C는 함수가 일급 객체가 아니라서 함수 단위의 대입이나 리턴을 할 수 없습니다.
+
+함수 단위로 작업할 수 있도록 Selector 라는 개념을 도입
+
+애플은 메소드나 함수를 Selector라고 표현을 합니다.
+
+=>iOS 프로그래밍에서 매개변수 중 Selector는 함수나 메소드를 요청하는 것입니다.
+
+=>swift에서 Objective-C 의 selector 로 사용할 수 있는 메소드를 만들 때는 func 앞에 @objc를 붙여야 합니다.
+
+class OOP{
+    @objc func attack()->Void{
+        print("공격")
+    }
+}
+
+//Timer 클래스 : 일정 시간마다 메소드를 호출하는 클래스
+//Timer.scheduledTimer(timeInterval:주기, target:타이머의 부모가 될 객체,selector:수행할 메소드, userInfo:Dictinary)
+//userInfo - 부가정보, parameter의 역할
+
+//target 이 될 객체 생성
+var oop:OOP = OOP()
+var timer : Timer = Timer.scheduledTimer(timeInterval:5, target:oop, selector:#selector(OOP.attack), userInfo: nil, repeats: true)
+//결과값 : 5초마다 공격 출력
+**생성자와 소멸자
+
+=>Constructor: 인스턴스를 생성할 때 호출하는 메소드
+
+인스턴스가 생성될 때 가장 먼저 호출되는 메소드
+
+생성자가 하는 일은 allocation(메모리 할당) 과 initialize(초기화 작업)
+
+Objective-C는 생성자를 호출할 때 alloc + init
+
+모든 객체 지향 언어에서는 클래스를 만들면 매개변수가 없는 생성자를 제공을 합니다.
+
+이 생성자는 개발자가 생성자를 만들면 자동으로 소멸됩니다.
+
+생성자의 첫번째 줄에는 우리 눈에는 보이지 않지만 상위 클래스의 생성자를 호출하는 코드가 포함되어 있습니다. 이 때 호출하는 생성자는 매개변수가 없는 생성자입니다.
+
+생성자를 만드는 목적은 초기화 작업을 위해서입니다.
+
+​
+
+=>Destructor: 인스턴스가 파괴 될 때 호출되는 메소드
+
+매개변수를 가질 수 없으며 Overloading도 안됨
+
+사용을 한 외부 자원에 대한 release 작업을 수행
+
+​
+
+=>swift에서는 생성자를 init이라고 정의
+
+소멸자는 deinit
+
+​
+
+=>swift의 메모리 정리
+
+swift, Objective-C, kotlin 와 python은 참조 카운팅이라는 개념을 이용해서 메모리 정리
+
+처음 메모리 할당을 받으면 참조 카운트는 1로 설정
+
+이 메모리 영역을 다른 변수가 참조하면 참조 카운트가 1증가
+
+변수가 소멸되거나 nil을 대입하면 참조 카운트가 1감소
+
+참조 카운트가 0가 되면 Garbage Collection이 메모리를 회수
+
+게임이나 오랜시간 동안 사용하는 애플리케이션은 메모리 정리가 중요
+
+import UIKit
+
+class OOP{
+    @objc func attack()->Void{
+        print("공격")
+    }
+    
+    //생성자 - 초기화 메소드
+    init(){
+        print("생성자 호출")
+    }
+    
+    //소멸자 - 인스턴스가 파괴될 때 호출되는 메소드
+    deinit {
+        print("소멸자 호출")
+    }
+}
+
+
+//Timer 클래스 : 일정 시간마다 메소드를 호출하는 클래스
+//Timer.scheduledTimer(timeInterval:주기, target:타이머의 부모가 될 객체,selector:수행할 메소드, userInfo:Dictinary)
+//userInfo - 부가정보, parameter의 역할
+
+//target 이 될 객체 생성
+//인스턴스를 생성 - 참조 카운트가 1이 됩니다.
+var oop:OOP! = OOP()
+
+/*
+var timer : Timer = Timer.scheduledTimer(timeInterval:5, target:oop, selector:#selector(OOP.attack), userInfo: nil, repeats: true)
+*/
+
+//nil을 대입하면 참조 카운트가 1감소
+//참조 카운트가 0이면 메모리 해제가 발생
+
+//oop의 참조를 oop1에 대입 - 참조 카운트가 1증가 : 2
+var oop1 = oop
+//oop에 nil을 대입하면 oop에는 nil 이 저장되고 참조 카운트를
+//1 감소 - 메모리 정리가 되지 않을 수 도 있습니다.
+oop = nil
+
+//oop에는 nil이 대입되서 예외가 발생하지만
+//oop1은 아직 예전 참조가 가지고 있으므로 메소드나 속성을 사용
+//할 수 있습니다.
+//정리를 하고자 하면 oop1 에도 nil을 대입해야 합니다.
+oop1!.attack()
+oop1 = nil
+**Swift의 상속
+
+1.상속 방법
+
+class 클래스이름 : 상위 클래스이름{
+	=>상위 클래스의 멤버를 사용 할 수 있음
+}
+2.overriding(메소드 재정의)
+
+=>상위 클래스의 메소드를 하위 클래스에서 다시 정의하는 것
+
+=>목적은 상위 클래스에서 제공해주는 메소드의 기능이 부족해서 기능 확장을 위해서 수행
+
+상위 클래스의 메소드를 호출하고 필요한 기능을 추가로 정의
+
+=>swift에서는 overriding을 할 때 반드시 func 앞에 override를 붙여야 합니다.
+
+=>프로퍼티도 오버라이딩 가능
+
+=>init의 오버라이딩(생성자 오버라이딩): 상위 클래스에 매개변수가 없는 생성자(Default Constructor)가 없는 경우 - View를 커스터마이징 할 때 필요합니다.
+
+//수정전
+class Individual{
+    var num : Int!
+    var name : String!
+    var jumin : String!
+    
+    func disp() -> Void{
+        print("개인 고객")
+    }
+}
+
+class Enterprise{
+    var num : Int!
+    var name : String!
+    var code : String!
+    
+    func disp() -> Void{
+        print("기업 고객")
+    }
+}
+//수정1
+class Customer{
+    var num : Int!
+    var name : String!
+    
+    func disp() -> Void{
+        print("\(num) : \(name)")
+    }
+}
+class Individual : Customer{
+    var jumin : String!
+}
+class Enterprise : Customer{
+    var code : String!
+}
+
+var individual : Individual = Individual()
+individual.num = 2020
+individual.name = "배기훈"
+individual.jumin = "101010"
+individual.disp()
+//결과
+Optional(2020) : Optional("배기훈")
+//disp() 수정
+class Customer{
+    var num : Int!
+    var name : String!
+    
+    func disp() -> Void{
+        print("\(num) : \(name)")
+    }
+}
+//여기 부분 수정
+class Individual : Customer{
+    var jumin : String!
+    override func disp() -> Void{
+        //상위 클래스 메소드 호출
+        super.disp()
+        //필요한 코드를 추가
+        print(jumin)
+    }
+}
+class Enterprise : Customer{
+    var code : String!
+}
+
+var individual : Individual = Individual()
+individual.num = 2020
+individual.name = "배기훈"
+individual.jumin = "930610"
+individual.disp()
+//결과
+//Optional(2020) : Optional("배기훈")
+//Optional("930610")
+3.상속 관계에서의 대입
+
+=>상위 클래스 타입으로 선언된 변수에 하위 클래스 타입으로 만들어진 인스턴스의 참조를 바로 대입할 수 있다.
+
+=>하위 클래스 타입으로 선언된 변수에 상위 클래스 타입으로 만들어진 변수의 참조는 강제 형 변환을 해야만 대입이 가능하다.
+
+이 때 책임은 개발자가 져야 한다.
+
+상위 클래스 타입의 변수에 저장된 인스턴스의 참조가 하위 클래스 타입으로 만들어진 경우만 가능하다.
+
+​
+
+4.인스턴스 참조 변수의 메소드 호출
+
+=>인스턴스 참조 변수는 기본적으로는 선언되었을 때 사용한 클래스의 멤버만 호출할 수 있는데 예외적으로 오버라이딩 된 메소드는 선언되었을 때 사용한 클래스 타입이 아니고 대입된 인스턴스의 자료형의 메소드를 호출합니다.
+
+class Customer{
+    var num : Int!
+    var name : String!
+    
+    func disp() -> Void{
+        print("\(num) : \(name)")
+    }
+}
+class Individual : Customer{
+    var jumin : String!
+    override func disp() -> Void{
+        //상위 클래스 메소드 호출
+        super.disp()
+        //필요한 코드를 추가
+        print(jumin)
+    }
+}
+class Enterprise : Customer{
+    var code : String!
+}
+
+var individual : Individual = Individual()
+individual.num = 10
+individual.name = "척준경"
+individual.jumin = "101010"
+individual.disp()
+
+//Customer -> Individual
+
+//하위 클래스 타입의 인스턴스는 상위 클래스 타입의 변수에 대입 가능
+var customer:Customer = Individual();
+
+//반대의 경우는 안됨
+//var individual1:Individual = Customer();
+
+//강제 형 변환을 이용하면 문법적으로는 가능 : 실행하면 예외 발생
+//var individual1:Individual = Customer() as! Individual
+
+//customer 는 원래 Individual로 만들었기 때문에 가능
+var individual1:Individual = customer as! Individual
+**enum
+
+=>나열형 상수
+
+=>여러 개의 상수를 하나로 묶어 둔 것
+
+=>옵션(선택 제한)을 만들 때 사용
+
+enum 이름 : 자료형{
+	case 항목이름 = 값,
+    case 항목이름 = 값…
+}
+=>사용을 할 때는 이름.항목이름 으로 사용
+
+=>iOS에서는 만드는 것보다는 사용하는 것이 더 중요
+
+=>iOS에서는 변수의 자료형이 결정되어 있다면 이름을 생략하고 .항목이름 만으로 대입이 가능
+
+=>iOS SDK의 최근 버전의 가장 큰 변화 2가지는 Swift UI의 도입과 항목이름을 소문자로 사용하는 것입니다.
+
+이전에는 대문자로 만들었습니다.
+
+2019년 이전에 나온 책들의 소스 에러의 대부분은 이 부분입니다.
+
+//열거형 상수 정의
+enum Comm : Int{
+    case SK = 1
+    case LG = 9
+}
+
+var x : Comm = Comm.SK
+x = .LG
+
+//Apple에서 열거형 상수는 전부 내부 클래스 형태로 만들어져
+//있습니다.
+//iOS Framework를 사용하다가
+//매개변수가 ?.? 이렇게 되어 있으면 이건 전부 열거형 상수입니다.
+**Protocol
+
+=>자바의 인터페이스와 유사한 개념
+
+자바의 인터페이스가 Protocol을 가져온 개념입니다.
+
+=>공통으로 구현해야 할 기능 목록을 가진 것
+
+=>메소드와 속성 그리고 init의 선언만 포함할 수 있습니다.
+
+1. 속성의 경우
+
+var 속성이름 : 자료형{get, set}
+2.메소드의 경우
+
+func 메소드이름(매개변수)
+3.init
+
+init(매개변수)
+4.클래스에서 conform
+
+
+class 클래스이름:프로토콜이름 나열{
+
+}
+=>여러 개를 나열하고자 하는 경우는 ,로 구분
+
+=>프로토콜의 모든 요소를 전부 구현해야 합니다.
+
+​
+
+5.선택적 구현
+
+메소드나 프로퍼티 앞에 @objc optional 을 추가해주면 됩니다.
+
+이렇게 만들어진 프로코콜을 conform 하는 클래스는 클래스 앞에 @objc 를 추가하거나 Objective-C 의 클래스로부터 상속을 받아야 합니다.
+
+//이 방법은 권장하지 않음 아래 소스코드 참고
+
+//프로토콜
+@objc protocol MediaPlayer{
+    //필수 구현 메소드
+    func play()
+    func stop()
+    //선택적 구현 메소드
+    @objc optional func pause()
+}
+//아래 소스코드 수정 참고
+//프로토콜을 구현한 클래스
+//이 클래스는 NSObject로 상속받아서 @objc를 생략
+class VideoMediaPlayer : MediaPlayer{
+    func play(){
+        print("재생")
+    }
+    func stop(){
+        print("중지")
+    }
+}
+6.iOS에서는 프로토콜의 이름을 공통된 방법으로 사용
+
+클래스이름DataSource :  데이터 출력을 위한 메소드를 소유한 프로토콜 - 필수 메소드 존재
+
+클래스이름Delegate : 이벤트 처리를 위한 메소드를 소유한 프로토콜  - 전부 선택적 구현 
+
+​
+
+**Extension
+
+=>클래스의 기능을 확장하는 개념
+
+=>이전에는 Category 라고 함
+
+extension 기존클래스이름{
+	속성
+    메소드
+}
+=>기존 클래스에 속성 과 메소드가 추가
+
+현재 프로젝트에서만 적용
+
+=>하나의 프로젝트에서 추가를 했더라도 다른 프로젝트에서는 영향이 없음
+
+//프로토콜의 메소드를 구현할 때는 extension을 이용해서 구현하는 것이 코드의
+//가독성을 높일 수 있는 방법입니다.
+extension VideoMediaPlayer : MediaPlayer{
+    func play(){
+        print("재생")
+    }
+    func stop(){
+        print("중지")
+    }
+}
+** Swift에서 제공하는 자료구조 클래스
+
+1.종류
+
+=>Array: 배열, 리스트의 개념으로 동작, Double Linked List 구조
+
+=>Set: 중복되지 않도록 해싱을 해서 데이터를 저장하는 자료구조
+
+=>Dictionary: Key 와 Value를 쌍으로 저장하는 자료구조
+
+=>Tuple: 데이터의 모임 - DTO 의 성격
+
+=>String: Character의 모임
+
+=>Tuple을 제외하고는 동일한 자료형의 모임입니다.
+
+여러가지 자료형을 저장하고자 하면 Any, AnyObject를 이용하면 됩니다.
+
+=>Objectve-C 에는 Tuple을 제외한 자료형의 클래스가 존재
+
+NSArray, NSSet, NSDictionary, NSString: 변경이 불가능한 자료형
+
+NSMutableArray, NSMutableSet, NSMutableDictionary, NSMutableString: 변경이 가능한 자료형
+
+​
+
+2.String
+
+=>String 은 구조체 - 값의 모임
+
+=>= 로 대입하면 데이터를 복제해서 대입
+
+=>+ 와 +=이 재정의되어 있어서 다른 문자열과 결합할 수 있습니다.
+
+append 메소드를 이용해서 이어붙이기를 할 수 있습니다.
+
+=>데이터의 모임이므로 for ~ in을 이용해서 하나의 문자 단위로 접근이 가능
+
+=>문자열 템플릿(보간) 기능을 소유: 다른 변수의 값을 문자열 상수 안에 삽입해서 하나의 문자열을 만드는 것이 가능
+
+=>”\u{유니코드}”를 이용해서 문자열 생성하는 것이 가능
+
+=>count 속성으로 문자열 개수 파악 가능 : swift4에서 제공되는 문법
+
+=>문자열 크기 비교를 >, < 로 가능
+
+//String 유니코드 사용
+
+//문자열 변수 생성
+var str : String = "Swift String"
+//문자열을 추가
+str += "\u{1F496}"
+print(str)
+//이모티콘을 코드안에 넣을 수 있다.
+//결과값 : Swift String💖
+
+//문자열 크기 비교 >,<
+//문자열 크기 비교를 연산자를 이용해서 가능
+var str1 : String = "ABCD"
+var str2 : String = "abcd"
+print(str1 > str2)  //결과값 : false
+
+//struct 는 값의 형태이고 class는 참조의 형태
+var str3 = str1
+//값을 복사했기 때문에 복사본에서 작업을 수행해도 원본에는
+//영향이 없습니다.
+str3 = "EFGH"
+//Swift에서는 String을 Character의 모임으로 보기 때문에
+//이터레이터를 이용한 접근이 가능
+for imsi in str1{
+    print(imsi)
+}
+//결과값 
+//A
+//B
+//C
+//D
+3.Array
+
+=>배열, 동적인 배열이라서 Double Linked List 구조로 동작
+
+1)배열의 생성
+
+//정적 생성
+var 또는 let 배열이름 : [자료형] = [데이터를 나열]
+//동적 생성
+var 또는 let 배열이름 = [자료형]()
+2)배열에 데이터를 추가
+
+//마지막에 데이터를 추가
+append(데이터)
+//중간에 추가
+insert(데이터, at:위치)
+
+// + 연산자를 이용해서 다른 배열을 추가할 수 있음
+3)배열의 데이터를 순서대로 순회
+
+//빠른 열거(이터레이터)이용
+for 임시변수 in 배열이름{
+	임시변수를 이용한 데이터의 순차적인 접근
+}
+
+//직접 순서대로 접근
+//count 속성을 이용하면 데이터의 개수를 알 수 있음
+//[인덱스]를 이용하면 특정 인덱스에 해당하는 데이터에 접근이 가능, 인덱스는 0부터 count-1까지
+var idx : Int = 0
+while(idx < 배열.count){
+	배열[idx]
+   Idx = idx + 1 
+} 
+4)배열의 특정 번째 데이터를 가져오는 것
+
+배열[idx]
+
+//범위 내의 데이터를 가져오기 - slicing
+배열[시작인덱스...종료인덱스]
+5)배열의 데이터를 정렬하는 것
+
+Array.sorted()를 호출하면 오름차순 정렬 가능 : 배열의 각 요소가 되는 데이터가 >가 사용 가능해야 합니다.
+
+>가 없는 경우에는 함수를 생성해서 대입 :  이 함수는 2개의 매개변수를 갖고 Bool을 리턴해야 함
+
+​
+
+6)배열의 전체 데이터를 확인하는 것
+
+=>배열이름을 print 메소드에 대입하면 description이라는 속성을 호출해서 각 요소의 description을 [ ]로 묶어서 출력
+
+=>Java에서는 toString을 이용했지만 swift에서는 description이라는 속성을 사용
+
+=>swift에서 toString을 사용하고자 하면 description이라는 프로퍼티를 오버라이딩하면 됩니다.
+
+//배열 생성
+//기존 데이터를 가지고 배열을 생성
+var names:[String] = ["배기훈", "28살", "스위프트공부중"]
+//배열의 데이터 확인
+print(names)
+//결과값 : ["배기훈", "28살", "스위프트공부중"]
+
+//기존 데이터가 없는 경우
+var dream:[String] = [String]()
+dream.append("나는 28살이다.") //마지막에 데이터를 추가
+dream.insert("멋진 개발자가 되었으면 좋겠다.", at: 0) //첫번째에 데이터를 추가
+
+//배열의 데이터 정렬
+dream.sort() // sort는 자신의 데이터를 정렬
+//sorted()는 정렬한 결과를 리턴(리턴을 받아야 값을 받을 수 있다)
+print(dream)
+
+//결과값 : ["나는 28살이다.", "멋진 개발자가 되었으면 좋겠다."]
+
+//sort 함수의 by라는 매개변수에 2개의 매개변수를 가지고
+//Bool을 리턴하는 함수를 대입하면 함수를 가지고 비교해서
+//데이터를 정렬해줍니다.
+func mycompare(str1:String, str2:String) -> Bool{
+    return str1 > str2
+}
+dream.sort(by:mycompare)
+print(dream)
+//결과값 : ["멋진 개발자가 되었으면 좋겠다.", "나는 28살이다."]
+
+//클로저를 이용한 정렬
+//위처럼 정렬하는 것보다 애플은 클로저사용을 권장.
+dream.sort(by:{(str1:String, str2:String) -> Bool in return str1 > str2})
+
+print("클로저를 이용한 정렬: \(dream)")
+//결과값 : 클로저를 이용한 정렬: ["멋진 개발자가 되었으면 좋겠다.", "나는 28살이다."]
+
+//트레일링 클로저를 이용한 정렬
+//함수가 마지막 매개변수인 경우 함수를 호출하는 구문 외부에
+//클로저를 생성 - iOS의 샘플 코드가 대부분 이방식
+dream.sort(){(str1:String, str2:String) -> Bool in
+    return str1 < str2}
+print("트레일링 클로저를 이용한 정렬: \(dream)")
+//결과값 : 트레일링 클로저를 이용한 정렬: ["나는 28살이다.", "멋진 개발자가 되었으면 좋겠다."]
+7)배열에 Map - Reduce Programming을 위한 함수
+
+=>map: 하나의 매개변수와 리턴 타입을 갖는 함수를 대입
+
+배열의 각 요소를 대입받아서 리턴하는 값의 배열로 리턴해주는 함수
+
+데이터를 변환해주는 역할을 수행하는 함수
+
+​
+
+=>filter: 하나의 매개변수와 Bool 리턴 타입을 갖는 함수를 대입
+
+배열의 각 요소를 대입받아서 true를 리턴하는 요소들의 배열로 리턴해주는 함수
+
+데이터를 필터필해주는 역할을 수행하는 함수
+
+​
+
+=>reduce: 2개의 매개변수와 하나의 값을 리턴 타입으로 갖는 함수를 대입
+
+첫번째 매개변수는 중간 결과이고 두번째 매개변수는 배열의 각 요소가 되서 집계를 수행해서 리턴하는 함수
+
+​
+
+4.Set
+
+=>데이터를 중복없이 저장하는 자료구조
+
+=>해싱을 이용해서 데이터를 저장
+
+=>터치를 처리하는 메소드에서 터치의 값을 가져오기 위한 정도로만 사용
+
+=>정적으로 만들 때 배열과 방법은 같은데 [자료형] 대신에 Set<자료형>
+
+​
+
+5.Tuple
+
+=>여러가지 종류의 데이터를 하나로 묶을 수 있는 자료형
+
+=>한 번 묶이면 수정이 불가능
+
+=>자료형 만들기
+
+(자료형, 자료형, …)
+
+=>데이터 만들기
+
+(값, 값, …)
+
+=>데이터 접근
+
+튜플.인덱스
+
+=>데이터 앞에 이름을 부여하면 인덱스 대신에 이름으로도 접근 가능
+
+=>스위프트에서는 DTO별도로 잘 안만들고 튜플을 사용하는 것을 권장
+
+//문자열 1개와 정수 1개를 저장하는 튜플을 생성
+var user01 : (String, Int) = ("배기훈", 28)
+//전체 출력
+print(user01)
+//결과값 : ("배기훈", 28)
+
+//부분 출력
+print(user01.0)
+//결과값 : 배기훈
+
+//튜플을 만들 때 각 항목의 이름을 부여해서 생성
+//클래스와 구조체 만드는 효과를 볼 수 있어서
+//DTO 클래스를 안만들고 이렇게 사용하기도 합니다.
+var user02 : (name:String, age:Int) = (name:"배기훈짱", age:28)
+print(user02)
+//결과값 :(name: "배기훈짱", age: 28)
+print(user02.name)
+//결과값 :배기훈짱
+print(user02.age)
+//결과값 :28
+user02.name = "배기훈짱짱"
+print(user02)
+//결과값 :(name: "배기훈짱짱", age: 28)
+6.Dictionary
+
+=>Key 와 Value를 쌍으로 저장하는 자료구조
+
+1)생성
+
+var 또는 let 변수명:[key의 자료형 : value의 자료형] = [key:value, key:value…]
+var 또는 let 변수명:Dictionary<key의 자료형 : value의 자료형> = [:]
+=>key의 자료형은 모든 자료형이 가능하지만 특별한 경우를 제외하고는 String
+2)데이터 개수는 count를 이용해서 찾아옴
+
+​
+
+3)접근
+
+=>데이터 추가 및 갱신
+
+디셔너리이름[키] = 값 //존재하는 키면 수정이고 존재하지 않는 키면 삽입 - upsert
+=>데이터를 리턴
+
+디셔너리이름[키]
+swift에서는 디셔너리로 데이터를 가져올 때는 Optional로 가져옵니다.
+
+사용을 할 때는 !를 이용해서 Optional을 해제하고 사용해야 합니다.
+
+​
+
+=>삭제
+
+1. nil을 대입
+//또는
+2. removeValueForKey(키이름)
+4)모든 데이터 접근
+
+=>Dictionary를 for-in을 이용해서 접근하면 모든 데이터를 튜플로 하나씩 리턴
+
+=>keys 속성을 호출하면 모든 key의 값을 리턴
+
+//디셔너리 생성
+var dict1 = ["name":"배기훈", "age":"28"]
+
+//값을 여러가지 자료형으로 삽입하고자 할 때는 value의 자료형을 Any로 설정해야 합니다.
+//스위프트 샘플에서는 Any로 설정하는 경우가 거의 없는데
+//iOS에서는 Any로 설정해서 리턴하는 경우가 많습니다.
+var dict2:Dictionary<String, Any> = ["name":"배기훈짱", "age":2828]
+
+//확인
+print(dict1)
+
+//name 속성의 값 가져오기
+print(dict2["name"])
+//결과값 : Optional("배기훈짱")
+
+//Dictionary는 가져와서 사용할 때
+//Optional을 해제해서 사용해야 합니다.
+print(dict2["name"]!)
+//결과값 : 배기훈짱
+** 예외처리
+
+do{
+	try{
+			예외가 발생할 가능성이 있는 코드
+	}
+	catch 예외이름{
+		예외가 발생했을 때 사용할 코드
+	}
+	catch 예외이름{
+		예외가 발생했을 때 사용할 코드
+	}
+..
+}
+=>이전 API에서 예외처리를 강제하는 경우에는 예외처리 구문을 사용해야 하는데 try! 을 앞에 붙이면 예외처리를 하지 않아도 됩니다. 
+
+​
+
+**defer
+
+//defer를 사용하면 위치에 상관없이 블럭이 끝나면 호출
+defer{내용}
